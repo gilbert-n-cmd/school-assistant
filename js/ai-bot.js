@@ -31,7 +31,7 @@
     // 1. Draw the HTML onto the page
     injectHTML();
     
-    // 2. Wait for the browser to paint the DOM (crucial for Android)
+    // 2. Wait 100ms for mobile browsers to paint the DOM
     await new Promise(r => setTimeout(r, 100));
     
     // 3. NOW grab the elements and attach events safely
@@ -179,9 +179,7 @@
     // ============================================
     if (window.visualViewport) {
       window.visualViewport.addEventListener('resize', () => {
-        // Only run this on mobile screens
         if (botWindow.classList.contains('open') && window.innerWidth <= 600) {
-          // Resize the chat window to exactly match the visible screen area above the keyboard
           botWindow.style.height = `${window.visualViewport.height}px`;
           botWindow.style.top = `${window.visualViewport.offsetTop}px`;
         }
@@ -374,23 +372,25 @@
       submit.disabled = true;
       submit.textContent = "Connecting…";
 
+      // 1. WAIT FOR AUTH MODULE TO LOAD (5 second timeout)
       try {
         const started = Date.now();
-        while ((!window.tarantinoLogin || !window.tarantinoSignUp) && Date.now() - started < 10000) {
+        while ((!window.tarantinoLogin || !window.tarantinoSignUp) && Date.now() - started < 5000) {
           await new Promise(resolve => setTimeout(resolve, 50));
         }
 
         if (!window.tarantinoLogin || !window.tarantinoSignUp) {
-          throw new Error("AI authentication module did not load within 10 seconds.");
+          throw new Error("Auth system offline. Please refresh the page.");
         }
       } catch (authInitError) {
         console.error("[AI Bot] Auth initialization failed:", authInitError);
-        errBox.textContent = "Authentication could not start. Check the browser console for the exact error.";
+        errBox.textContent = "Authentication could not start. Please refresh the page and try again.";
         submit.disabled = false;
         submit.textContent = authMode === "signup" ? "Sign Up" : "Sign In";
         return;
       }
 
+      // 2. PERFORM LOGIN/SIGNUP
       submit.textContent = "Please wait…";
 
       try {
@@ -401,7 +401,7 @@
         }
         closeAuthModal();
       } catch (err) {
-        console.error("[Auth]", err);
+        console.error("[Auth Error]", err);
         errBox.textContent = friendlyAuthError(err);
       } finally {
         submit.disabled = false;
@@ -432,13 +432,11 @@
     botWindow.classList.toggle("open");
     const isOpen = botWindow.classList.contains("open");
     
-    // Hide the floating button when the chat is open
     botButton.style.display = isOpen ? "none" : "flex";
     
     if (isOpen) {
       setTimeout(() => inputField.focus(), 200);
     } else {
-      // RESET HEIGHT/Top styling when closing on mobile
       botWindow.style.height = '';
       botWindow.style.top = '';
     }
