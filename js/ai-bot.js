@@ -1,7 +1,7 @@
 /* ============================================
    AI Guide Bot — FINAL BULLETPROOF FILE
    Includes human-like typewriter effect, clean auth, 
-   fallback matching, and Android render fix.
+   fallback matching, and Android keyboard fix.
    ============================================ */
 
 (function () {
@@ -31,7 +31,7 @@
     // 1. Draw the HTML onto the page
     injectHTML();
     
-    // 2. Wait 100 milliseconds for mobile browsers to paint the DOM
+    // 2. Wait for the browser to paint the DOM (crucial for Android)
     await new Promise(r => setTimeout(r, 100));
     
     // 3. NOW grab the elements and attach events safely
@@ -173,6 +173,20 @@
       e.__aiAuthHandled = true;
       openAuthModal();
     });
+
+    // ============================================
+    // ANDROID KEYBOARD FIX
+    // ============================================
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', () => {
+        // Only run this on mobile screens
+        if (botWindow.classList.contains('open') && window.innerWidth <= 600) {
+          // Resize the chat window to exactly match the visible screen area above the keyboard
+          botWindow.style.height = `${window.visualViewport.height}px`;
+          botWindow.style.top = `${window.visualViewport.offsetTop}px`;
+        }
+      });
+    }
   }
 
   // ============================================
@@ -423,6 +437,10 @@
     
     if (isOpen) {
       setTimeout(() => inputField.focus(), 200);
+    } else {
+      // RESET HEIGHT/Top styling when closing on mobile
+      botWindow.style.height = '';
+      botWindow.style.top = '';
     }
   }
 
