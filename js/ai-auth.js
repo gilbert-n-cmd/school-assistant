@@ -55,10 +55,15 @@ function waitForFirebase() {
       } catch (err) {
         console.warn("[Auth] Could not write user doc:", err);
       }
-      window.dispatchEvent(new CustomEvent("auth:login", { detail: user }));
+      
+      // 🚨 FIX: Broadcast to the bot using the correct event name
+      window.dispatchEvent(new CustomEvent("ai-bot:login", { detail: user }));
+
     } else {
       console.log("[Auth] Logged out");
-      window.dispatchEvent(new CustomEvent("auth:logout"));
+      
+      // 🚨 FIX: Broadcast to the bot using the correct event name
+      window.dispatchEvent(new CustomEvent("ai-bot:logout"));
     }
   });
 
