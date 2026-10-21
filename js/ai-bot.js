@@ -1,7 +1,7 @@
 /* ============================================
    AI Guide Bot — FINAL BULLETPROOF FILE
    Includes human-like typewriter effect, clean auth, 
-   and fallback to local keyword matching.
+   fallback matching, and Android render fix.
    ============================================ */
 
 (function () {
@@ -28,7 +28,13 @@
       return;
     }
 
+    // 1. Draw the HTML onto the page
     injectHTML();
+    
+    // 2. Wait 100 milliseconds for mobile browsers to paint the DOM
+    await new Promise(r => setTimeout(r, 100));
+    
+    // 3. NOW grab the elements and attach events safely
     cacheElements();
     attachEvents();
     await showWelcome();
@@ -671,7 +677,7 @@
         }
       }
 
-      // 3️⃣ Fallback to Built-in Keyword Matching (This guarantees it finds your saved data)
+      // 3️⃣ Fallback to Built-in Keyword Matching
       const reply = await keywordMatch(userText);
       removeTyping();
       await addTypedMessage(reply, true);
